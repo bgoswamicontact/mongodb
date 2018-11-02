@@ -8,25 +8,25 @@ using System.Threading.Tasks;
 
 namespace crud_array_operators
 {
-    class Program
+    class EmbeddedDocumentsArray
     {
-        static void Main(string[] args)
-        {
-            var client = new MongoClient();
-            var database = client.GetDatabase("mongodb");
-            database.DropCollection("inventory");
-            var collection = database.GetCollection<BsonDocument>("inventory");
+        //static void Main(string[] args)
+        //{
+        //    var client = new MongoClient();
+        //    var database = client.GetDatabase("mongodb");
+        //    database.DropCollection("inventory");
+        //    var collection = database.GetCollection<BsonDocument>("inventory");
 
-            SetUpData(collection);
-            var data = SpecifyQueryConditionOnFieldInArrayOfDocuments(collection);
-            foreach (var item in data)
-            {
-                //ALWAYS REMEMBER BSONDOCUMENT is nothing but a Dictionary
-                Console.WriteLine(item["item"].ToString());
+        //    SetUpData(collection);
+        //    var data = SpecifyQueryConditionOnFieldInArrayOfDocuments(collection);
+        //    foreach (var item in data)
+        //    {
+        //        //ALWAYS REMEMBER BSONDOCUMENT is nothing but a Dictionary
+        //        Console.WriteLine(item["item"].ToString());
 
-            }
-            Console.ReadKey();
-        }
+        //    }
+        //    Console.ReadKey();
+        //}
 
         private static List<BsonDocument> SpecifyQueryConditionOnFieldInArrayOfDocuments(IMongoCollection<BsonDocument> collection)
         {
@@ -41,7 +41,15 @@ namespace crud_array_operators
             //var filter = Builders<BsonDocument>.Filter.ElemMatch<BsonValue>("instock", new BsonDocument { { "qty", 5 }, { "warehouse", "C" } });
 
             //instock array has at least one embedded document that contains the field qty that is greater than 10 and less than or equal to 20:
-            var filter = Builders<BsonDocument>.Filter.ElemMatch<BsonValue>("instock", new BsonDocument { { "qty", new BsonDocument { { "$gt", 10 }, { "$lte", 20 } } } });
+            //var filter = Builders<BsonDocument>.Filter.ElemMatch<BsonValue>("instock", new BsonDocument { { "qty", new BsonDocument { { "$gt", 10 }, { "$lte", 20 } } } });
+
+            //Combination of Elements Satisfies the Criteria¶
+            //the following query matches documents where any document nested in the instock array has the qty field greater than 10 and any document (but not necessarily the same embedded document) 
+            //in the array has the qty field less than or equal to 20:
+            var builder = Builders<BsonDocument>.Filter;
+            //var filter = builder.Gt("instock.qty", 10) & builder.Lte("instock.qty", 20);
+            var filter = builder.Eq("instock.qty", 5) & builder.Eq("warehouse", "A");
+
             var result = collection.Find(filter).ToList();
             return result;
         }
